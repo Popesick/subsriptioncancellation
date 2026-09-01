@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aboverwaltung Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f3f4f6;
+        }
+        
+        .screen {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        .screen.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        /* Der fiese flüchtende Button */
+        #runaway-btn {
+            position: relative;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        /* Unauffälliger Link, der kaum als solcher erkennbar ist */
+        .stealth-link {
+            color: #d1d5db; /* Sehr helles Grau */
+            text-decoration: none;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .stealth-link:hover {
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center relative overflow-hidden bg-gray-100 p-4">
+
+    <!-- FAKE MODAL (Für "Abostufe ändern" & versteckte Upgrades) -->
+    <div id="premium-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex-col items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-md text-center transform transition-transform">
+            <div class="text-6xl mb-4">🎉</div>
+            <h2 class="text-2xl font-extrabold text-green-600 mb-4">Gratulation!</h2>
+            <p class="text-gray-700 font-medium mb-6">
+                Du hast das Premium-Abo abgeschlossen! Wir lieben dich. Du bist uns wichtig! Deine Kreditkarte wurde automatisch belastet.
+            </p>
+            <button onclick="hideModal()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-4 rounded-xl shadow-lg transition-colors">
+                OK, toll!
+            </button>
+        </div>
+    </div>
+
+    <!-- SCREEN 1: Startbildschirm -->
+    <div id="screen-1" class="screen active flex-col items-center w-full max-w-lg p-10 bg-white rounded-3xl shadow-2xl text-center">
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-12">Aboverwaltung</h1>
+        
+        <button onclick="showModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xl py-5 px-6 rounded-2xl shadow-lg mb-16 transform transition hover:scale-105">
+            Abostufe ändern
+        </button>
+        
+        <!-- Der versteckte Einstieg in die Hölle -->
+        <span onclick="switchScreen('screen-login')" class="text-gray-300 text-xs cursor-pointer hover:text-gray-400 mt-8">
+            Abo kündigen
+        </span>
+    </div>
+
+    <!-- SCREEN LOGIN: Der Einstieg in den Kündigungsprozess -->
+    <div id="screen-login" class="screen flex-col items-center w-full max-w-lg p-10 bg-white rounded-3xl shadow-2xl text-center">
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-4">Kunden-Login</h1>
+        <p class="text-sm text-gray-500 mb-8">Bitte loggen Sie sich ein, um Ihre Abonnements zu kündigen.</p>
+
+        <div class="w-full text-left mb-6">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Kundennummer</label>
+            <input type="text" class="w-full rounded-xl border-gray-300 bg-gray-50 shadow-inner focus:border-indigo-500 focus:ring-indigo-500 text-sm p-4 border" placeholder="Ihre Kundennummer">
+            <div class="mt-3 text-xs text-red-800 bg-red-50 p-4 rounded-xl border border-red-200 text-justify leading-relaxed">
+                <strong>Hinweis:</strong> Steht auf der Rückseite der Rechnung, die wir Ihnen vor Jahren eventuell als PDF zugeschickt haben. Wenn Sie diese nicht mehr vorliegen haben, wenden Sie sich an unseren kostenpflichtigen Kundensupport (2,99€/Min. aus dem Festnetz).
+            </div>
+        </div>
+
+        <div class="w-full text-left mb-8">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Passwort</label>
+            <input type="password" class="w-full rounded-xl border-gray-300 bg-gray-50 shadow-inner focus:border-indigo-500 focus:ring-indigo-500 text-sm p-4 border" placeholder="••••••••">
+        </div>
+
+        <button onclick="switchScreen('screen-captcha')" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold text-lg py-4 px-6 rounded-2xl shadow-lg mb-6 transition-colors">
+            Einloggen
+        </button>
+
+        <span onclick="switchScreen('screen-forgot-pw')" class="text-gray-400 text-sm cursor-pointer hover:text-gray-600 underline">
+            Passwort vergessen?
+        </span>
+    </div>
+
+    <!-- SCREEN FORGOT PW: Die freche Fehlermeldung -->
+    <div id="screen-forgot-pw" class="screen flex-col items-center w-full max-w-lg p-10 bg-white rounded-3xl shadow-2xl text-center">
+        <div class="text-red-500 text-6xl mb-6">❓</div>
+        <h1 class="text-2xl font-extrabold text-gray-800 mb-4">Nutzer unbekannt</h1>
+        <p class="text-sm text-gray-600 mb-10 leading-relaxed">
+            Wir konnten diese Kundennummer oder E-Mail in unserer Datenbank nicht finden. Möglicherweise wurden Ihre Daten aus Sicherheitsgründen gelöscht. Das kostenpflichtige Abonnement läuft davon unberührt natürlich weiter.
+        </p>
+        
+        <button onclick="switchScreen('screen-1')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg py-4 px-6 rounded-2xl shadow-lg">
+            Zurück zur Aboverwaltung
+        </button>
+    </div>
+
+    <!-- SCREEN CAPTCHA: Die unlösbare Hürde -->
+    <div id="screen-captcha" class="screen flex-col items-center w-full max-w-lg p-10 bg-white rounded-3xl shadow-2xl text-center">
+        <h1 class="text-2xl font-extrabold text-gray-800 mb-4">Sicherheitsüberprüfung</h1>
+        <p class="text-sm text-gray-500 mb-6">Bitte bestätige, dass du kein Roboter bist, um den Kündigungsprozess zu starten.</p>
+
+        <div class="bg-gray-200 p-6 rounded-2xl mb-6 w-full relative overflow-hidden select-none flex items-center justify-center border-4 border-gray-100 shadow-inner" id="captcha-box" style="height: 140px;">
+            <div id="captcha-text" class="text-5xl font-mono font-bold text-gray-700 tracking-[0.4em] blur-[1px] skew-x-12 transform -rotate-3 transition-all duration-300">
+                W7pQ2L
+            </div>
+            <div class="absolute inset-0 pointer-events-none opacity-60">
+                <div class="w-full h-1 bg-gray-500 absolute top-1/4 transform rotate-6"></div>
+                <div class="w-full h-1 bg-gray-600 absolute top-2/4 transform -rotate-12"></div>
+                <div class="w-full h-1 bg-gray-400 absolute top-3/4 transform rotate-3"></div>
+            </div>
+        </div>
+
+        <input type="text" id="captcha-input" class="w-full rounded-xl border-gray-300 bg-gray-50 shadow-inner focus:border-indigo-500 focus:ring-indigo-500 text-xl p-4 border mb-3 text-center tracking-widest" placeholder="Code eingeben">
+        
+        <div id="captcha-error" class="hidden text-red-600 text-sm font-bold mb-6 h-12 flex items-center justify-center bg-red-50 w-full rounded-lg border border-red-200 px-2">
+            Fehler!
+        </div>
+
+        <button onclick="verifyCaptcha()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg py-4 px-6 rounded-2xl shadow-lg mb-6">
+            Bestätigen
+        </button>
+
+        <span onclick="switchScreen('screen-keep')" class="text-gray-400 text-sm cursor-pointer hover:text-gray-600 underline">
+            Abbrechen und Abo behalten
+        </span>
+    </div>
+
+    <!-- SCREEN 2: Erste Nachfrage -->
+    <div id="screen-2" class="screen flex-col items-center w-full max-w-lg p-10 bg-white rounded-3xl shadow-2xl text-center">
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-10">Willst du wirklich das Abo kündigen?</h1>
+        
+        <button onclick="switchScreen('screen-3')" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold text-xl py-5 px-6 rounded-2xl shadow-lg mb-8">
+            Ja
+        </button>
+        
+        <span onclick="switchScreen('screen-keep')" class="text-gray-400 text-sm cursor-pointer underline hover:text-gray-600">
+            Nein
+        </span>
+    </div>
+
+    <!-- SCREEN 3: Zweite Nachfrage -->
+    <div id="screen-3" class="screen flex-col items-center w-full max-w-lg p-10 bg-white rounded-3xl shadow-2xl text-center">
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-10">Bist du wirklich sicher, dass du dein Abo kündigen willst?</h1>
+        
+        <button onclick="switchScreen('screen-upgrade-trick')" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold text-xl py-5 px-6 rounded-2xl shadow-lg mb-8">
+            Ja
+        </button>
+        
+        <span onclick="switchScreen('screen-keep')" class="text-gray-400 text-sm cursor-pointer underline hover:text-gray-600">
+            Nein
+        </span>
+    </div>
+
+    <!-- SCREEN UPGRADE TRICK: Das verklausulierte Upgrade -->
+    <div id="screen-upgrade-trick" class="screen flex-col items-center w-full max-w-lg p-10 bg-white rounded-3xl shadow-2xl text-center">
+        <div class="text-yellow-500 text-5xl mb-4">⚠️</div>
+        <h1 class="text-2xl font-extrabold text-gray-800 mb-4">Wichtiger Sicherheitshinweis!</h1>
+        <p class="text-sm text-gray-600 mb-6 text-justify leading-relaxed bg-gray-50 p-4 rounded-xl border border-gray-100">
+            Um den Kündigungsprozess nicht unvollständig abzuschließen und eventuelle Bearbeitungsgebühren für das Nicht-Vorhandensein eines Premium-Status zu vermeiden, empfehlen wir dringend, der Aufhebung der Nicht-Aktualisierung zuzustimmen.
+        </p>
+        <p class="text-sm text-gray-800 mb-8 font-bold">Stimmen Sie zu, auf die Ablehnung des automatischen Platin-Upgrades zu verzichten?</p>
+        
+        <button onclick="showModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg py-4 px-6 rounded-2xl shadow-lg mb-6">
+            Ja, Verzicht auf Ablehnung bestätigen (Upgrade)
+        </button>
+        
+        <span onclick="switchScreen('screen-4')" class="stealth-link mt-4">
+            Nein, ich möchte die Gebühren riskieren und fortfahren
+        </span>
+    </div>
+
+    <!-- SCREEN 4: Die Fangfrage (Farbumkehr) -->
+    <div id="screen-4" class="screen flex-col items-center w-full max-w-lg p-10 bg-white rounded-3xl shadow-2xl text-center">
+        <h1 class="text-2xl font-extrabold text-gray-800 mb-6">Wir verstehen. Möchtest du stattdessen all deine gespeicherten Daten und Vorteile behalten?</h1>
+        <p class="text-sm text-gray-500 mb-10">Ein Klick auf "Ja" hält deinen Account aktiv und sicher.</p>
+        
+        <!-- Farbeinwechsel! "Ja" ist jetzt grün, bedeutet aber Abo behalten -->
+        <button onclick="switchScreen('screen-keep')" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold text-2xl py-6 px-6 rounded-2xl shadow-xl mb-8 transform transition hover:scale-105">
+            Ja, natürlich!
+        </button>
+        
+        <span onclick="switchScreen('screen-data')" class="stealth-link mt-4">
+            Nein, ich möchte wirklich alle meine Daten für immer löschen und kündigen.
+        </span>
+    </div>
+
+    <!-- SCREEN DATA: Das absurde Formular -->
+    <div id="screen-data" class="screen flex-col items-start w-full max-w-lg p-8 bg-white rounded-3xl shadow-2xl max-h-[90vh] overflow-y-auto">
+        <h1 class="text-2xl font-extrabold text-gray-800 mb-2">Identitätsprüfung</h1>
+        <p class="text-xs text-gray-500 mb-8">Für eine wirksame Kündigung benötigen wir noch ein paar unwesentliche Details von dir.</p>
+        
+        <div class="space-y-5 w-full mb-8">
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Vorname & Nachname</label>
+                <input type="text" readonly onclick="fillFake(this, 'Max Mustermann')" class="w-full rounded-lg border-gray-300 bg-gray-50 text-sm p-3 border cursor-pointer hover:bg-gray-100 transition-colors" placeholder="Klicken zum Ausfüllen...">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Name der Nachbarin (die hübsche)</label>
+                <input type="text" readonly onclick="fillFake(this, 'Sabine Sommer')" class="w-full rounded-lg border-gray-300 bg-gray-50 text-sm p-3 border cursor-pointer hover:bg-gray-100 transition-colors" placeholder="Klicken zum Ausfüllen...">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Telefonnr. der Nachbarin</label>
+                <input type="text" readonly onclick="fillFake(this, '0151-87654321 (ruf nur abends an)')" class="w-full rounded-lg border-gray-300 bg-gray-50 text-sm p-3 border cursor-pointer hover:bg-gray-100 transition-colors" placeholder="Klicken zum Ausfüllen...">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Sozialversicherungsnummer</label>
+                <input type="text" readonly onclick="fillFake(this, 'DE-99-88-777-666-X')" class="w-full rounded-lg border-gray-300 bg-gray-50 text-sm p-3 border cursor-pointer hover:bg-gray-100 transition-colors" placeholder="Klicken zum Ausfüllen...">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Scan vom Personalausweis</label>
+                <input type="text" readonly onclick="fillFake(this, 'ausweis_scan_v4_final_echt.pdf')" class="w-full rounded-lg border-gray-300 bg-gray-50 text-sm p-3 border cursor-pointer hover:bg-gray-100 transition-colors border-dashed" placeholder="Klicken zum Hochladen...">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Notarschreiben (beglaubigt)</label>
+                <input type="text" readonly onclick="fillFake(this, 'notar_stempel_blutunterschrift.png')" class="w-full rounded-lg border-gray-300 bg-gray-50 text-sm p-3 border cursor-pointer hover:bg-gray-100 transition-colors border-dashed" placeholder="Klicken zum Hochladen...">
+            </div>
+            <div class="grid grid-cols-2 gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Zeuge 1 (Name)</label>
+                    <input type="text" readonly onclick="fillFake(this, 'Thorsten (Kneipe)')" class="w-full rounded-lg border-gray-300 bg-white text-sm p-2 border cursor-pointer" placeholder="Klick...">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Telefon</label>
+                    <input type="text" readonly onclick="fillFake(this, '0190-666666')" class="w-full rounded-lg border-gray-300 bg-white text-sm p-2 border cursor-pointer" placeholder="Klick...">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Zeuge 2 (Name)</label>
+                    <input type="text" readonly onclick="fillFake(this, 'Oma Erna')" class="w-full rounded-lg border-gray-300 bg-white text-sm p-2 border cursor-pointer" placeholder="Klick...">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Telefon</label>
+                    <input type="text" readonly onclick="fillFake(this, 'Hat kein Telefon')" class="w-full rounded-lg border-gray-300 bg-white text-sm p-2 border cursor-pointer" placeholder="Klick...">
+                </div>
+            </div>
+        </div>
+
+        <button onclick="checkDataAndProceed()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold text-lg py-4 px-6 rounded-2xl shadow-lg mb-4">
+            Daten sicher übermitteln
+        </button>
+        <div id="data-error" class="hidden text-red-600 text-sm text-center w-full mb-6 font-bold bg-red-50 p-3 rounded-xl border border-red-200">
+            Bitte fülle alle Pflichtfelder aus (einfach in die Felder klicken)!
+        </div>
+        
+        <button onclick="switchScreen('screen-keep')" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold text-sm py-4 px-6 rounded-2xl shadow-sm transition-colors">
+            Doch lieber nicht
+        </button>
+    </div>
+
+    <!-- SCREEN 5: Textwand & Checkboxen & Flüchtender Button -->
+    <div id="screen-5" class="screen flex-col items-start w-full max-w-lg p-10 bg-white rounded-3xl shadow-2xl">
+        <h1 class="text-2xl font-extrabold text-gray-800 mb-4">Letzter Schritt: Bestätigung</h1>
+        <p class="text-xs text-gray-500 mb-6 text-justify leading-relaxed">
+            Bitte lies die folgenden Bedingungen sorgfältig durch. Durch das Abwählen der Checkboxen stimmst du zu, dass du nicht zustimmst, deine Vorteile nicht zu behalten.
+        </p>
+        
+        <div class="space-y-5 mb-10 w-full bg-gray-50 p-5 rounded-2xl border border-gray-200">
+            <label class="flex items-start gap-4 text-sm text-gray-700 cursor-pointer">
+                <input type="checkbox" class="mt-1 w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked>
+                <span class="leading-relaxed">Ich stimme zu, dass ich auf keinen Fall möchte, dass mein Abo <strong>nicht</strong> verlängert wird.</span>
+            </label>
+            <label class="flex items-start gap-4 text-sm text-gray-700 cursor-pointer">
+                <input type="checkbox" class="mt-1 w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked>
+                <span class="leading-relaxed">Sende mir täglich Newsletter, damit ich weiß, was ich verpasse.</span>
+            </label>
+        </div>
+
+        <!-- Der große, gut sichtbare Abbruch-Button -->
+        <button onclick="switchScreen('screen-keep')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xl py-5 px-6 rounded-2xl shadow-lg mb-8">
+            Kündigung abbrechen & Zurück
+        </button>
+
+        <!-- Der springende Button -->
+        <div class="w-full flex justify-center h-16 relative bg-gray-100 rounded-xl overflow-hidden" id="runaway-container">
+            <button id="runaway-btn" class="absolute top-3 bg-gray-300 text-gray-600 text-xs py-2 px-4 rounded-lg hover:bg-gray-400" onmouseover="moveButton()" onclick="switchScreen('screen-6')">
+                Kostenpflichtig kündigen
+            </button>
+        </div>
+    </div>
+
+    <!-- SCREEN 6: Der Fake-Error -->
+    <div id="screen-6" class="screen flex-col items-center w-full max-w-lg p-10 bg-white rounded-3xl shadow-2xl text-center">
+        <div class="text-red-500 text-6xl mb-6">⚠️</div>
+        <h1 class="text-2xl font-extrabold text-gray-800 mb-4">Systemfehler (Error 504)</h1>
+        <p class="text-sm text-gray-600 mb-10 leading-relaxed">
+            Ups! Unsere Kündigungsserver sind momentan leider nicht erreichbar. Bitte versuche es in 2-3 Werktagen erneut. Bis dahin bleibt dein Abo aktiv.
+        </p>
+        
+        <button onclick="switchScreen('screen-1')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg py-5 px-6 rounded-2xl shadow-lg mb-6">
+            Zurück zur sicheren Startseite
+        </button>
+        
+        <p class="text-xs text-gray-400 mt-10">
+            Falls das Problem weiterhin besteht, kontaktiere den Support per Fax. Oder klicke 
+            <span onclick="switchScreen('screen-7')" class="text-gray-300 cursor-pointer hover:text-gray-500 font-bold transition-colors">hier</span> 
+            für den manuellen Prozess.
+        </p>
+    </div>
+
+    <!-- SCREEN 7: "Erfolg" -->
+    <div id="screen-7" class="screen flex-col items-center w-full max-w-lg p-10 bg-white rounded-3xl shadow-2xl text-center">
+        <div class="text-gray-400 text-6xl mb-6">💀</div>
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-6">Schade.</h1>
+        <p class="text-sm text-gray-600 mb-10 leading-relaxed p-4 bg-gray-50 rounded-xl border border-gray-200">
+            Dein Abo wurde für die Kündigung vorgemerkt. Gemäß unseren AGB (Absatz 34, Zeile 12) beträgt die Kündigungsfrist 12 Monate zum Monatsende. Wir werden den vollen Jahresbetrag in Kürze abbuchen.
+        </p>
+        
+        <button onclick="location.reload()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold text-lg py-5 px-6 rounded-2xl shadow-lg">
+            Simulation neu starten
+        </button>
+    </div>
+
+    <!-- SCREEN KEEP: Das Liebes-Geständnis -->
+    <div id="screen-keep" class="screen flex-col items-center w-full max-w-lg p-10 bg-white rounded-3xl shadow-2xl text-center">
+        <div class="text-7xl mb-6 animate-bounce">❤️</div>
+        <h1 class="text-4xl font-extrabold text-pink-600 mb-6">Danke!</h1>
+        <p class="text-gray-700 font-medium mb-10 text-lg leading-relaxed">
+            Danke, dass du das Abo weiterlaufen lässt. Wir lieben dich! Dein Vertrauen bedeutet uns alles.
+        </p>
+        <button onclick="resetToStart()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-2xl shadow-lg transform transition hover:scale-105">
+            Zurück zur Aboverwaltung
+        </button>
+    </div>
+
+    <script>
+        // --- NAVIGATION & MODAL LOGIK ---
+        
+        function switchScreen(targetId) {
+            // Alle Screens verstecken
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // Neuen Screen anzeigen
+            const targetScreen = document.getElementById(targetId);
+            if(targetScreen) {
+                targetScreen.classList.add('active');
+            }
+        }
+
+        function showModal() {
+            const modal = document.getElementById('premium-modal');
+            if(modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        function hideModal() {
+            const modal = document.getElementById('premium-modal');
+            if(modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+            // Nach einem "Upgrade" (egal ob von der Startseite oder dem Trick) landen wir auf dem Love-Screen
+            switchScreen('screen-keep');
+        }
+
+        // --- CAPTCHA LOGIK ---
+        let captchaAttempts = 0;
+        const captchaErrors = [
+            "Falsch! Bitte achte penibel auf die Groß-/Kleinschreibung.",
+            "Sitzung abgelaufen (Timeout). Ein neues Captcha wurde generiert.",
+            "Fehler! Wir haben verdächtige Mausbewegungen festgestellt. Versuch es erneut.",
+            "Ihre IP-Adresse wirkt ungewöhnlich. Sind Sie wirklich ein Mensch?"
+        ];
+        const captchaTexts = ["W7pQ2L", "mB4v9Z", "8kTwP1", "gR5nLx", "Q1wE6r"];
+
+        function verifyCaptcha() {
+            const errorDiv = document.getElementById('captcha-error');
+            const inputField = document.getElementById('captcha-input');
+            const captchaText = document.getElementById('captcha-text');
+
+            if (captchaAttempts < 4) {
+                // Die ersten 4 Versuche schlagen gnadenlos fehl
+                errorDiv.textContent = captchaErrors[captchaAttempts];
+                errorDiv.classList.remove('hidden');
+                errorDiv.classList.add('flex');
+
+                captchaAttempts++;
+                
+                // Neues Captcha laden und noch unleserlicher machen
+                captchaText.textContent = captchaTexts[captchaAttempts];
+                inputField.value = "";
+                
+                // Mit jedem Versuch wird es verzerrter und verschwommener
+                captchaText.style.transform = `skewX(${12 + captchaAttempts * 10}deg) rotate(${-3 + captchaAttempts * 5}deg)`;
+                captchaText.style.filter = `blur(${1 + captchaAttempts * 0.5}px)`;
+            } else {
+                // Beim 5. Versuch klappt es endlich
+                errorDiv.classList.add('hidden');
+                errorDiv.classList.remove('flex');
+                switchScreen('screen-2');
+            }
+        }
+
+        function resetToStart() {
+            // Setzt das Captcha zurück, wenn man abbricht und später neu anfängt
+            captchaAttempts = 0;
+            const errorDiv = document.getElementById('captcha-error');
+            errorDiv.classList.add('hidden');
+            errorDiv.classList.remove('flex');
+            document.getElementById('captcha-input').value = "";
+            
+            const captchaText = document.getElementById('captcha-text');
+            captchaText.textContent = captchaTexts[0];
+            captchaText.style.transform = `skewX(12deg) rotate(-3deg)`;
+            captchaText.style.filter = `blur(1px)`;
+            
+            switchScreen('screen-1');
+        }
+
+        // --- FAKE DATEN LOGIK ---
+        function fillFake(element, fakeText) {
+            element.value = fakeText;
+            element.classList.remove('bg-gray-50', 'bg-white');
+            element.classList.add('bg-green-50', 'border-green-400', 'text-green-800', 'font-semibold');
+        }
+
+        function checkDataAndProceed() {
+            const inputs = document.querySelectorAll('#screen-data input');
+            let allFilled = true;
+            inputs.forEach(input => {
+                if (!input.value) allFilled = false;
+            });
+
+            const errorDiv = document.getElementById('data-error');
+            if (allFilled) {
+                errorDiv.classList.add('hidden');
+                switchScreen('screen-5');
+            } else {
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        // --- DER FLÜCHTENDE BUTTON (ROACH PATTERN) ---
+        function moveButton() {
+            // Nur auf Geräten mit Maus wirklich flüchten lassen
+            if (window.matchMedia("(pointer: coarse)").matches) return; 
+
+            const runawayBtn = document.getElementById('runaway-btn');
+            const runawayContainer = document.getElementById('runaway-container');
+            
+            if(!runawayBtn || !runawayContainer) return;
+
+            const containerRect = runawayContainer.getBoundingClientRect();
+            const btnRect = runawayBtn.getBoundingClientRect();
+            
+            // Berechne sichere Grenzen innerhalb des Containers
+            const maxLeft = containerRect.width - btnRect.width - 10;
+            const maxTop = containerRect.height - btnRect.height - 10;
+            
+            const randomLeft = Math.max(5, Math.floor(Math.random() * maxLeft));
+            const randomTop = Math.max(5, Math.floor(Math.random() * maxTop));
+
+            runawayBtn.style.left = `${randomLeft}px`;
+            runawayBtn.style.top = `${randomTop}px`;
+        }
+    </script>
+</body>
+</html>
