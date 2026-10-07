@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0f172a">
+<title>BonusPortal</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <span class="logo"><span class="coin">🪙</span>BonusPortal</span>
+  <span id="team-chip" class="chip" hidden></span>
+</header>
+
+<!-- Fake-Modal: "Verzicht" -->
+<div id="modal" class="modal" role="dialog" aria-modal="true">
+  <div class="box">
+    <div class="emoji">🎉</div>
+    <h2>Gratulation!</h2>
+    <p>Ihr habt erfolgreich auf euren Bonuspunkt verzichtet. Wir lieben euch! Ihr seid uns wichtig! Der Bonuspunkt wurde automatisch storniert.</p>
+    <button class="btn green" data-action="modal-ok">OK, toll!</button>
+  </div>
+</div>
+
+<main>
+
+<!-- HOME -->
+<section id="screen-home" class="screen active" data-screen="home">
+  <div class="emoji huge">🪙</div>
+  <h1 class="big">BonusPortal</h1>
+  <p class="lead">Willkommen im Kundenbereich. Was möchtet ihr heute tun?</p>
+  <button class="btn blue" data-action="modal-open" style="font-size:1.2rem;min-height:64px">Wir wollen keinen Bonuspunkt</button>
+  <button class="stealth" data-goto="login" style="margin-top:34px">Bonuspunkt holen!</button>
+</section>
+
+<!-- LOGIN -->
+<section id="screen-login" class="screen" data-screen="login">
+  <h1>Team-Login</h1>
+  <p class="lead">Bitte loggt euch ein, um euren Bonuspunkt zu holen.</p>
+
+  <label class="field">
+    <span>Teamname</span>
+    <input type="text" id="team-input" maxlength="40" placeholder="Euer Teamname" autocomplete="off" autocapitalize="words" enterkeyhint="next">
+  </label>
+  <div class="notice red" style="margin:-8px 0 18px"><strong>Hinweis:</strong> Der Teamname steht auf der Rückseite eures Antwortbogens, den wir euch vor Jahren eventuell als PDF zugeschickt haben. Falls ihr diesen nicht mehr vorliegen habt, wendet euch an unseren kostenpflichtigen Kundensupport (2,99 €/Min. aus dem Festnetz).</div>
+
+
+  <label class="field">
+    <span>Passwort</span>
+    <input type="password" id="pw-input" placeholder="••••••••" autocomplete="new-password" enterkeyhint="go">
+  </label>
+
+  <div id="login-error" class="notice error" hidden></div>
+
+  <button class="btn dark" id="login-btn" data-action="login">Einloggen</button>
+  <button class="link" data-goto="forgot">Passwort vergessen?</button>
+
+  <a class="hotline" href="tel:+491763320401497">
+    📞 Probleme beim Login? Unsere Hotline hilft euch rund um die Uhr weiter:
+    <strong>+49 176 33 20401497</strong>
+  </a>
+</section>
+
+<!-- PASSWORT VERGESSEN -->
+<section id="screen-forgot" class="screen" data-screen="forgot">
+  <div class="emoji">❓</div>
+  <h1>Nutzer unbekannt</h1>
+  <p class="lead">Wir konnten diesen Teamnamen oder diese E-Mail in unserer Datenbank nicht finden. Möglicherweise wurden eure Daten aus Sicherheitsgründen gelöscht. Die kostenpflichtige Mitgliedschaft läuft davon unberührt natürlich weiter.</p>
+  <button class="btn blue" data-goto="home">Zurück zum Portal</button>
+  <a class="hotline" href="tel:+491763320401497" style="margin-top:4px">
+    📞 Bei Problemen hilft unsere Hotline:
+    <strong>+49 176 33 20401497</strong>
+  </a>
+</section>
+
+<!-- CAPTCHA -->
+<section id="screen-captcha" class="screen" data-screen="captcha">
+  <h1>Sicherheitsüberprüfung</h1>
+  <p class="lead">Bitte bestätigt, dass ihr kein Roboter seid, um den Bonuspunkt-Antrag zu starten.</p>
+  <div class="captcha-box">
+    <div id="captcha-text">W7pQ2L</div>
+    <div class="captcha-lines"><i></i><i></i><i></i></div>
+  </div>
+  <input type="text" id="captcha-input" class="captcha-input" placeholder="Code eingeben" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="margin-bottom:12px">
+  <div id="captcha-error" class="notice error" hidden></div>
+  <button class="btn blue" data-action="captcha">Bestätigen</button>
+  <button class="link" data-action="lose">Abbrechen und auf den Bonuspunkt verzichten</button>
+</section>
+
+<!-- NACHFRAGE 1 -->
+<section id="screen-confirm1" class="screen" data-screen="confirm1">
+  <h1 class="big">Wollt ihr wirklich den Bonuspunkt holen?</h1>
+  <p class="small" style="margin-bottom:26px">Team <strong data-team></strong>, bitte denkt gut darüber nach.</p>
+  <button class="btn red" data-goto="confirm2" style="font-size:1.25rem;min-height:64px">Ja</button>
+  <button class="link" data-action="lose">Nein</button>
+</section>
+
+<!-- NACHFRAGE 2 -->
+<section id="screen-confirm2" class="screen" data-screen="confirm2">
+  <h1 class="big">Seid ihr wirklich sicher, dass ihr den Bonuspunkt holen wollt?</h1>
+  <p class="small" style="margin-bottom:26px">Dieser Schritt kann nicht rückgängig gemacht werden. Vielleicht.</p>
+  <button class="btn red" data-goto="upsell" style="font-size:1.25rem;min-height:64px">Ja</button>
+  <button class="link" data-action="lose">Nein</button>
+</section>
+
+<!-- VERKLAUSULIERTES UPGRADE -->
+<section id="screen-upsell" class="screen" data-screen="upsell">
+  <div class="emoji" style="font-size:3rem">⚠️</div>
+  <h1>Wichtiger Sicherheitshinweis!</h1>
+  <p class="notice gray" style="text-align:justify;margin:0 0 16px;font-size:.85rem">
+    Um den Bonuspunkt-Antrag nicht unvollständig abzuschließen und eventuelle Bearbeitungsgebühren für das Nicht-Vorhandensein eines Premium-Status zu vermeiden, empfehlen wir dringend, der Aufhebung der Nicht-Aktualisierung zuzustimmen.
+  </p>
+  <p style="font-weight:700;font-size:.9rem;margin:0 0 20px">Stimmt ihr zu, auf die Ablehnung des automatischen Platin-Upgrades zu verzichten?</p>
+  <button class="btn blue" data-action="modal-open">Ja, Verzicht auf Ablehnung bestätigen (Upgrade)</button>
+  <button class="stealth" data-goto="trap">Nein, wir möchten die Gebühren riskieren und fortfahren</button>
+</section>
+
+<!-- FANGFRAGE (Farbumkehr) -->
+<section id="screen-trap" class="screen" data-screen="trap">
+  <h1>Wir verstehen. Möchtet ihr stattdessen ohne Bonuspunkt weitermachen und alle Vorteile behalten?</h1>
+  <p class="small" style="margin-bottom:26px">Ein Klick auf „Ja“ hält euer Konto aktiv und sicher.</p>
+  <button class="btn green" data-action="lose">Ja, natürlich!</button>
+  <button class="stealth" data-goto="queue">Nein, wir wollen wirklich den Bonuspunkt holen und auf alle Vorteile verzichten.</button>
+</section>
+
+<!-- WARTESCHLANGE -->
+<section id="screen-queue" class="screen" data-screen="queue">
+  <div class="emoji">⏳</div>
+  <h1>Hohe Nachfrage</h1>
+  <p class="lead" style="margin-bottom:10px">Aktuell holen sich sehr viele Teams ihren Bonuspunkt. Ihr seid in der Warteschlange:</p>
+  <div class="small">Eure Position</div>
+  <div id="queue-pos" class="queue-pos">–</div>
+  <div class="bar"><i id="queue-bar"></i></div>
+  <p id="queue-msg" class="queue-msg">Bitte verlasst diese Seite nicht, sonst verliert ihr euren Platz.</p>
+</section>
+
+<!-- IDENTITÄTSPRÜFUNG -->
+<section id="screen-data" class="screen" data-screen="data">
+  <h1>Identitätsprüfung</h1>
+  <p class="lead">Für einen wirksamen Antrag benötigen wir noch ein paar unwesentliche Details von euch. Tippt einfach in die Felder.</p>
+  <div class="form-grid">
+    <label class="field"><span>Vor- und Nachname des Kapitäns</span><input type="text" readonly inputmode="none" data-fill="Max Mustermann" placeholder="Tippen zum Ausfüllen …"></label>
+    <label class="field"><span>Teamname rückwärts (zur Sicherheit)</span><input type="text" readonly inputmode="none" data-fill="@reverse" placeholder="Tippen zum Ausfüllen …"></label>
+    <label class="field"><span>Name der Bedienung (die nette)</span><input type="text" readonly inputmode="none" data-fill="Sabine Sommer" placeholder="Tippen zum Ausfüllen …"></label>
+    <label class="field"><span>Telefonnr. der Bedienung</span><input type="text" readonly inputmode="none" data-fill="0151-87654321 (ruf nur abends an)" placeholder="Tippen zum Ausfüllen …"></label>
+    <label class="field"><span>Sozialversicherungsnummer</span><input type="text" readonly inputmode="none" data-fill="DE-99-88-777-666-X" placeholder="Tippen zum Ausfüllen …"></label>
+    <label class="field"><span>Scan vom Personalausweis</span><input type="text" readonly inputmode="none" class="dashed" data-fill="ausweis_scan_v4_final_echt.pdf" placeholder="Tippen zum Hochladen …"></label>
+    <label class="field"><span>Notarschreiben (beglaubigt)</span><input type="text" readonly inputmode="none" class="dashed" data-fill="notar_stempel_blutunterschrift.png" placeholder="Tippen zum Hochladen …"></label>
+    <div class="pair">
+      <label class="field"><span>Zeuge 1 (Name)</span><input type="text" readonly inputmode="none" data-fill="Thorsten (der Wirt)" placeholder="Tippen …"></label>
+      <label class="field"><span>Telefon</span><input type="text" readonly inputmode="none" data-fill="0190-666666" placeholder="Tippen …"></label>
+    </div>
+    <div class="pair">
+      <label class="field"><span>Zeuge 2 (Name)</span><input type="text" readonly inputmode="none" data-fill="Oma Erna" placeholder="Tippen …"></label>
+      <label class="field"><span>Telefon</span><input type="text" readonly inputmode="none" data-fill="Hat kein Telefon" placeholder="Tippen …"></label>
+    </div>
+  </div>
+  <div id="data-error" class="notice error" hidden>Bitte füllt alle Pflichtfelder aus (einfach in die Felder tippen)!</div>
+  <button class="btn dark" data-action="data-submit">Daten sicher übermitteln</button>
+  <button class="btn soft" data-action="lose">Doch lieber nicht</button>
+</section>
+
+<!-- GEDRÜCKT HALTEN -->
+<section id="screen-hold" class="screen" data-screen="hold">
+  <h1>Willensbestätigung</h1>
+  <p class="lead">Zur Bestätigung eures ernsthaften Willens haltet bitte den Knopf <strong>5 Sekunden</strong> lang gedrückt. Nicht loslassen!</p>
+  <div class="hold-wrap">
+    <button id="hold-btn" class="hold-btn" type="button">
+      <svg viewBox="0 0 210 210"><circle class="track" cx="105" cy="105" r="100"/><circle id="hold-prog" class="prog" cx="105" cy="105" r="100"/></svg>
+      <span id="hold-label">Gedrückt halten</span>
+    </button>
+    <div id="hold-msg" class="hold-msg"></div>
+  </div>
+  <button class="link" data-action="lose">Abbrechen</button>
+</section>
+
+<!-- TEXTWAND, CHECKBOXEN & FLÜCHTENDER BUTTON -->
+<section id="screen-final" class="screen" data-screen="final">
+  <h1>Letzter Schritt: Bestätigung</h1>
+  <p class="small" style="text-align:justify;margin:0 0 18px">Bitte lest die folgenden Bedingungen sorgfältig durch. Durch das Abwählen der Checkboxen stimmt ihr zu, dass ihr nicht zustimmt, euren Bonuspunkt nicht zu verlieren.</p>
+  <div class="checks">
+    <label><input type="checkbox" checked><span>Wir stimmen zu, dass wir auf keinen Fall möchten, dass unser Bonuspunkt <strong>nicht</strong> verfällt.</span></label>
+    <label><input type="checkbox" checked><span>Sendet uns täglich Newsletter, damit wir wissen, was wir verpassen.</span></label>
+  </div>
+  <button class="btn blue" data-action="lose" style="font-size:1.15rem;min-height:60px">Antrag abbrechen &amp; zurück</button>
+  <div class="runaway-slot" id="runaway-slot">
+    <button id="runaway-btn" type="button">Bonuspunkt jetzt holen</button>
+  </div>
+</section>
+
+<!-- FAKE-ERROR -->
+<section id="screen-error" class="screen" data-screen="error">
+  <div class="emoji">⚠️</div>
+  <h1>Systemfehler (Error 504)</h1>
+  <p class="lead">Ups! Unsere Bonuspunkt-Server sind momentan leider nicht erreichbar. Bitte versucht es in 2–3 Werktagen erneut. Bis dahin bleibt euer Bonuspunkt unberührt.</p>
+  <button class="btn blue" data-action="home">Zurück zur sicheren Startseite</button>
+  <p class="small" style="margin:28px 0 0;color:var(--faint)">
+    Falls das Problem weiterhin besteht, kontaktiert den Support per Fax. Oder tippt
+    <button class="stealth" data-goto="done" style="display:inline;padding:10px 4px;font-weight:700;font-size:inherit">hier</button>
+    für den manuellen Prozess.
+  </p>
+</section>
+
+<!-- ZIEL -->
+<section id="screen-done" class="screen" data-screen="done">
+  <div class="emoji huge pulse">🏆</div>
+  <h1 class="big">Geschafft!</h1>
+  <p class="lead" style="margin-bottom:6px">Ihr habt euren Bonuspunkt geholt.</p>
+  <div class="proof">
+    <div class="team" data-team></div>
+    <div class="meta" id="done-meta">&nbsp;</div>
+    <div class="state" id="done-state">Ergebnis wird übermittelt …</div>
+  </div>
+  <p class="small">Zeigt diesen Bildschirm dem Quizmaster.<br><span style="color:var(--faint)">Gutschrift gemäß AGB (Absatz 34, Zeile 12) binnen 12 Monaten zum Monatsende. Spaß – der Quizmaster sieht es schon.</span></p>
+  <button class="btn gold" id="done-retry" data-action="done-retry" hidden>Erneut übermitteln</button>
+  <button class="stealth" data-action="home" style="margin-top:14px">Zurück zum Start</button>
+</section>
+
+<!-- VERZICHT -->
+<section id="screen-keep" class="screen" data-screen="keep">
+  <div class="emoji huge bounce">❤️</div>
+  <h1 class="big" style="color:#db2777">Danke!</h1>
+  <p class="lead" style="color:#374151;font-size:1.05rem">Danke, dass ihr auf den Bonuspunkt verzichtet. Wir lieben euch! Euer Vertrauen bedeutet uns alles.</p>
+  <button class="btn blue" data-action="home">Zurück zum Portal</button>
+</section>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
