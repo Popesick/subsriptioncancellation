@@ -495,6 +495,11 @@ $("team-input").addEventListener("input", () => {
 
 // ---------- Start ----------
 
+if (new URLSearchParams(location.search).has("reset")) {
+  try { localStorage.removeItem(STORE); localStorage.removeItem(TEAM_STORE); } catch {}
+  history.replaceState(null, "", location.pathname);
+}
+
 try { $("team-input").value = localStorage.getItem(TEAM_STORE) || ""; } catch {}
 
 const saved = load();
